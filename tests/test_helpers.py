@@ -452,6 +452,27 @@ def test_proxies_from_env_http_with_auth(mocker) -> None:
     assert proxy_auth.password == 'pass'
     assert proxy_auth.encoding == 'latin1'
 
+# ------------ get_no_proxies ---------------------------------
+def test_get_no_proxies(mocker) -> None:
+    no_proxy = [URL('http://aiohttp.io/path').host,
+                URL('http://example.com').host, '127.0.0.1']
+    no_proxy.sort()
+    mocker.patch.dict(os.environ, {'no_proxy': ','.join(no_proxy)})
+    ret = helpers.get_no_proxies()
+    ret.sort()
+    assert no_proxy == ret
+
+    no_proxy = [URL('http://aiohttp.io/path').host,
+                URL('http://example.com').host, '127.0.0.1']
+    no_proxy.sort()
+    mocker.patch.dict(os.environ, {'no_proxy': ','.join(no_proxy)})
+    mocker.patch.dict(os.environ, {'NO_PROXY': ','.join(no_proxy)})
+    ret = helpers.get_no_proxies()
+    ret.sort()
+    assert no_proxy == ret
+
+# ------------ is_in_no_proxy_list ---------------------------------
+
 # ------------ get_running_loop ---------------------------------
 
 

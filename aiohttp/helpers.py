@@ -90,7 +90,6 @@ DEBUG = (getattr(sys.flags, 'dev_mode', False) or
          (not sys.flags.ignore_environment and
           bool(os.environ.get('PYTHONASYNCIODEBUG'))))  # type: bool
 
-
 CHAR = set(chr(i) for i in range(0, 128))
 CTL = set(chr(i) for i in range(0, 32)) | {chr(127), }
 SEPARATORS = {'(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']',
@@ -252,6 +251,23 @@ def proxies_from_env() -> Dict[str, ProxyInfo]:
                 auth = BasicAuth(cast(str, login), cast(str, password))
         ret[proto] = ProxyInfo(proxy, auth)
     return ret
+
+
+def get_no_proxies() -> List[str]:
+    NO_PROXY_DELIM = ','
+    no_proxy = os.environ.get('NO_PROXY', '').split(NO_PROXY_DELIM) + \
+        os.environ.get('no_proxy', '').split(NO_PROXY_DELIM)
+    return list(set(filter(lambda x: x, [x.strip() for x in no_proxy])))
+
+
+def is_in_no_proxy_list(url: URL) -> bool:
+    if not url.host:
+        return False
+
+    for hostname in get_no_proxies():
+        if url.host.find(hostname) >= 0:
+            return True
+    return False
 
 
 def current_task(
